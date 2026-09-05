@@ -19,6 +19,7 @@ package org.apache.hop.imports.kettle;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.extension.ExtensionPointHandler;
@@ -516,9 +517,9 @@ public class KettleImportDialog extends Dialog {
     // See if we need to remember previous settings...
     //
     wImportFrom.setText(
-        Const.NVL(
-            AuditManagerGuiUtil.getLastUsedValue(LAST_USED_IMPORT_SOURCE_FOLDER),
-            Const.NVL(kettleImport.getInputFolderName(), "")));
+        initialSourceFolder(
+            kettleImport.getInputFolderName(),
+            AuditManagerGuiUtil.getLastUsedValue(LAST_USED_IMPORT_SOURCE_FOLDER)));
     wImportInExisting.setSelection(
         !CONST_FALSE.equalsIgnoreCase(
             AuditManagerGuiUtil.getLastUsedValue(LAST_USED_IMPORT_INTO_PROJECT)));
@@ -581,6 +582,12 @@ public class KettleImportDialog extends Dialog {
     AuditManagerGuiUtil.addLastUsedValue(
         LAST_USED_IMPORT_SKIP_FOLDERS, wSkipFolders.getSelection() ? "true" : CONST_FALSE);
     shell.dispose();
+  }
+
+  static String initialSourceFolder(String configuredSourceFolder, String lastUsedSourceFolder) {
+    return StringUtils.isNotBlank(configuredSourceFolder)
+        ? configuredSourceFolder
+        : Const.NVL(lastUsedSourceFolder, "");
   }
 
   private void browseHomeFolder(Event event) {
@@ -725,7 +732,10 @@ public class KettleImportDialog extends Dialog {
         box.open();
       }
     } catch (Exception e) {
-      new ErrorDialog(shell, "Error", "Error importing", e);
+      String title = BaseMessages.getString(PKG, "KettleImportDialog.Error.Title");
+      String message = BaseMessages.getString(PKG, "KettleImportDialog.Error.Message");
+      LogChannel.UI.logError(message, e);
+      new ErrorDialog(shell, title, message, new HopException(message));
     }
   }
 

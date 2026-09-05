@@ -29,6 +29,7 @@ import org.apache.commons.vfs2.FileObject;
 import org.apache.hop.core.variables.Variables;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Unit test for {@link HopVfs} */
 class HopVfsTest {
@@ -212,5 +213,15 @@ class HopVfsTest {
     assertEquals(
         HopVfs.getFileObject(userHome + "/test-file-hop.txt").getName().getURI(),
         childObj.getName().getURI());
+  }
+
+  @Test
+  void testGetFileObjectForNonExistingAbsolutePath(@TempDir Path tempDir) throws Exception {
+    Path configFile = tempDir.resolve("folder with spaces #1").resolve("hop-config.json.new");
+
+    FileObject fileObject = HopVfs.getFileObject(configFile.toString());
+
+    assertNotNull(fileObject);
+    assertEquals(configFile.toAbsolutePath().toString(), HopVfs.getFilename(fileObject));
   }
 }
